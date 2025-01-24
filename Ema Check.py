@@ -1,0 +1,208 @@
+import requests
+import numpy as np
+import pandas as pd
+import time
+from datetime import datetime
+
+# API and Telegram Token
+API_KEY = ""
+TELEGRAM_TOKEN = ""  # Replace with your actual Telegram token
+TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
+
+# Define symbol lists
+SYMBOL_LISTS = {
+    "LIST1": ["=", ""],  # List 1: BTC, LIT
+    "LIST2": ["", ""]   # List 2: BTC, ETH
+}
+
+# Function to fetch data from the API
+def fetch_data(symbol, timeframe):
+    # Map user-friendly timeframe inputs to API endpoints
+    timeframe_map = {
+        "15M": ("histominute", 15),  # 15 minutes
+        "1H": ("histohour", 1),      # 1 hour
+        "4H": ("histohour", 4),      # 4 hours
+        "D": ("histoday", 1),        # 1 day
+        "W": ("histoday", 7)         # 1 week
+    }
+
+    if timeframe not in timeframe_map:
+        raise ValueError("Invalid timeframe specified.")
+
+    endpoint, aggregate = timeframe_map[timeframe]
+    url = f"https://min-api.cryptocompare.com/data/{endpoint}?fsym={symbol}&tsym=USDT&limit=100&aggregate={aggregate}&api_key={API_KEY}&e=Kucoin"
+
+    response = requests.get(url)
+    data = response.json()["Data"]
+    df = pd.DataFrame(data)
+    df['time'] = pd.to_datetime(df['time'], unit='s')  # Convert timestamp to datetime
+    df.set_index('time', inplace=True)  # Set time as the index
+    return df
+
+# Function to calculate EMA
+def calculate_ema(df, period):
+    return df['close'].ewm(span=period, adjust=False).mean()
+
+# Function to check for EMA crossovers
+def check_crossover(df):
+    df['EMA_10'] = calculate_ema(df, 10)
+    df['EMA_20'] = calculate_ema(df, 20)
+    df['EMA_50'] = calculate_ema(df, 50)
+
+    # Check if EMA 10 and EMA 20 are above EMA 50 in the latest data point
+    latest_row = df.iloc[-1]
+    is_above = (latest_row['EMA_10'] > latest_row['EMA_50']) and (latest_row['EMA_20'] > latest_row['EMA_50'])
+
+    return is_above
+
+# Function to send a message via Telegram
+def send_telegram_message(chat_id, message, reply_markup=None):
+    url = f"{TELEGRAM_API_URL}/sendMessage"
+    payload = {
+        "chat_id": chat_id,
+        "text": message,
+    }
+    if reply_markup:
+        payload["reply_markup"] = reply_markup
+    response = requests.post(url, json=payload)
+    return response.json()
+
+# Function to handle the /start command
+def handle_start_command(chat_id):
+    # Create an inline keyboard with buttons for LIST1 and LIST2
+    keyboard = {
+        "inline_keyboard": [
+            [{"text": "LIST1 - 15M", "callback_data": "/EMA LIST1 15M"},
+             {"text": "LIST1 - 1H", "callback_data": "/EMA LIST1 1H"},
+             {"text": "LIST1 - 4H", "callback_data": "/EMA LIST1 4H"},
+             {"text": "LIST1 - D", "callback_data": "/EMA LIST1 D"},
+             {"text": "LIST1 - W", "callback_data": "/EMA LIST1 W"}],
+        ]
+    }
+    send_telegram_message(chat_id, "Choose a list and time frame:", reply_markup=keyboard)
+
+# Function to handle callback queries
+def handle_callback_query(callback_query):
+    chat_id = callback_query["message"]["chat"]["id"]
+    data = callback_query["data"]  # e.g., "/EMA LIST1 15M"
+
+    try:
+        # Parse the command
+        parts = data.split()
+        if len(parts) != 3:
+            raise ValueError("Invalid command format.")
+
+        target = parts[1].upper()  # Extract list name or symbol
+        timeframe = parts[2].upper()  # Extract timeframe (e.g., 15M)
+
+        # Check if the target is a list or a symbol
+        if target in SYMBOL_LISTS:
+            analyze_list(target, timeframe, chat_id)
+        else:
+            analyze_symbol(target, timeframe, chat_id)
+
+    except Exception as e:
+        error_message = f"Error: {str(e)}"
+        send_telegram_message(chat_id, error_message)
+
+# Function to analyze EMA crossovers for a single symbol
+def analyze_symbol(symbol, timeframe, chat_id):
+    try:
+        df = fetch_data(symbol, timeframe)
+        is_above = check_crossover(df)
+
+        # Prepare the message
+        message = f"📊 Analysis for {symbol} ({timeframe}):\n\n"
+        if is_above:
+            message += "✅ Above EMA 10, 20, and 50:\n"
+            message += f"-🚀 {symbol}\n"
+        else:
+            message += "❌ Not above EMA 10, 20, and 50:\n"
+            message += f"-🔻 {symbol}\n"
+
+        send_telegram_message(chat_id, message)
+    except Exception as e:
+        error_message = f"Error analyzing {symbol} ({timeframe}): {str(e)}"
+        send_telegram_message(chat_id, error_message)
+
+# Function to analyze EMA crossovers for a list of symbols
+def analyze_list(list_name, timeframe, chat_id):
+    try:
+        if list_name not in SYMBOL_LISTS:
+            raise ValueError(f"Invalid list name. Available lists: {', '.join(SYMBOL_LISTS.keys())}.")
+
+        symbols = SYMBOL_LISTS[list_name]
+        above_results = []
+        not_above_results = []
+
+        for symbol in symbols:
+            df = fetch_data(symbol, timeframe)
+            is_above = check_crossover(df)
+
+            if is_above:
+                above_results.append(f"-🚀 {symbol}")
+            else:
+                not_above_results.append(f"-🔻 {symbol}")
+
+        # Prepare the message
+        message = f"📊 Analysis for {list_name} ({timeframe}):\n\n"
+        if above_results:
+            message += "✅ Above EMA 10, 20, and 50:\n"
+            message += "\n".join(above_results) + "\n\n"
+        if not_above_results:
+            message += "❌ Not above EMA 10, 20, and 50:\n"
+            message += "\n".join(not_above_results)
+
+        send_telegram_message(chat_id, message)
+    except Exception as e:
+        error_message = f"Error analyzing {list_name} ({timeframe}): {str(e)}"
+        send_telegram_message(chat_id, error_message)
+
+# Main function
+def main():
+    last_update_id = None
+    while True:
+        # Get updates from Telegram
+        url = f"{TELEGRAM_API_URL}/getUpdates"
+        params = {"timeout": 30, "offset": last_update_id}
+        response = requests.get(url, params=params)
+        updates = response.json().get("result", [])
+
+        for update in updates:
+            last_update_id = update["update_id"] + 1  # Update the offset
+
+            # Handle /start command
+            if "message" in update and update["message"].get("text") == "/start":
+                chat_id = update["message"]["chat"]["id"]
+                handle_start_command(chat_id)
+
+            # Handle callback queries
+            if "callback_query" in update:
+                handle_callback_query(update["callback_query"])
+
+            # Handle /EMA command
+            if "message" in update and update["message"].get("text", "").startswith("/EMA"):
+                try:
+                    # Parse the command
+                    parts = update["message"]["text"].split()
+                    if len(parts) != 3:
+                        raise ValueError("Invalid command format. Use /EMA LISTNAME TIMEFRAME or /EMA SYMBOL TIMEFRAME.")
+
+                    target = parts[1].upper()  # Extract list name or symbol
+                    timeframe = parts[2].upper()  # Extract timeframe (e.g., 15M)
+
+                    # Check if the target is a list or a symbol
+                    if target in SYMBOL_LISTS:
+                        analyze_list(target, timeframe, update["message"]["chat"]["id"])
+                    else:
+                        analyze_symbol(target, timeframe, update["message"]["chat"]["id"])
+
+                except Exception as e:
+                    error_message = f"Error: {str(e)}. Please use the format /EMA LISTNAME TIMEFRAME or /EMA SYMBOL TIMEFRAME (e.g., /EMA LIST1 1H or /EMA BTC D)."
+                    send_telegram_message(update["message"]["chat"]["id"], error_message)
+
+        # Wait for 1 second before checking for new updates
+        time.sleep(1)
+
+if __name__ == "__main__":
+    main()
