@@ -3,16 +3,30 @@ import numpy as np
 import pandas as pd
 import time
 from datetime import datetime
+import json
+import logging
+import os
+from threading import Thread
+from keep import keep_alive
 
-# API and Telegram Token
-API_KEY = ""
-TELEGRAM_TOKEN = ""  # Replace with your actual Telegram token
+# Start the Flask app to keep the bot alive
+keep_alive()
+
+# Initialize the bot
+TELEGRAM_TOKEN = os.environ.get('6987736147:AAGtzXRQL8d2pkvUijq1X05mdzuyLO8vd5g')  # Fetch from environment variables
+API_KEY = os.environ.get('72a7a3627d030f1b8f06ea07f5e30f32007d4e6e338ae584010feb82dab6f86e')  # Fetch from environment variables
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
+
+# Track bot start time for uptime calculation
+start_time = time.time()
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Define symbol lists
 SYMBOL_LISTS = {
-    "LIST1": ["=", ""],  # List 1: BTC, LIT
-    "LIST2": ["", ""]   # List 2: BTC, ETH
+    "LIST1": ["BTC", "LIT"],  # List 1: BTC, LIT
+    "LIST2": ["BTC", "ETH"]   # List 2: BTC, ETH
 }
 
 # Function to fetch data from the API
@@ -57,29 +71,52 @@ def check_crossover(df):
 
 # Function to send a message via Telegram
 def send_telegram_message(chat_id, message, reply_markup=None):
-    url = f"{TELEGRAM_API_URL}/sendMessage"
-    payload = {
-        "chat_id": chat_id,
-        "text": message,
-    }
-    if reply_markup:
-        payload["reply_markup"] = reply_markup
-    response = requests.post(url, json=payload)
-    return response.json()
+    try:
+        url = f"{TELEGRAM_API_URL}/sendMessage"
+        payload = {
+            "chat_id": chat_id,
+            "text": message,
+        }
+        if reply_markup:
+            payload["reply_markup"] = reply_markup
+        response = requests.post(url, json=payload)
+        response.raise_for_status()  # Raise an error for bad status codes
+        return response.json()
+    except Exception as e:
+        logging.error(f"Failed to send message: {e}")
+        return None
 
 # Function to handle the /start command
 def handle_start_command(chat_id):
     # Create an inline keyboard with buttons for LIST1 and LIST2
     keyboard = {
         "inline_keyboard": [
+            # Buttons for LIST1
             [{"text": "LIST1 - 15M", "callback_data": "/EMA LIST1 15M"},
              {"text": "LIST1 - 1H", "callback_data": "/EMA LIST1 1H"},
              {"text": "LIST1 - 4H", "callback_data": "/EMA LIST1 4H"},
              {"text": "LIST1 - D", "callback_data": "/EMA LIST1 D"},
              {"text": "LIST1 - W", "callback_data": "/EMA LIST1 W"}],
+
+            # Buttons for LIST2
+            [{"text": "LIST2 - 15M", "callback_data": "/EMA LIST2 15M"},
+             {"text": "LIST2 - 1H", "callback_data": "/EMA LIST2 1H"},
+             {"text": "LIST2 - 4H", "callback_data": "/EMA LIST2 4H"},
+             {"text": "LIST2 - D", "callback_data": "/EMA LIST2 D"},
+             {"text": "LIST2 - W", "callback_data": "/EMA LIST2 W"}],
         ]
     }
-    send_telegram_message(chat_id, "Choose a list and time frame:", reply_markup=keyboard)
+
+    # Welcome message with instructions
+    welcome_message = (
+        "Welcome! Use the buttons below to get the EMA crossover analysis for a specific list and timeframe.\n\n"
+        "You can also use the following commands:\n"
+        "/EMA <list_name> <timeframe> - Analyze a specific list and timeframe.\n"
+        "/EMA <symbol> <timeframe> - Analyze a specific symbol and timeframe.\n"
+        "/status - Check the bot's status.\n")
+
+    # Send the welcome message with the inline keyboard
+    send_telegram_message(chat_id, welcome_message, reply_markup=keyboard)
 
 # Function to handle callback queries
 def handle_callback_query(callback_query):
@@ -158,8 +195,14 @@ def analyze_list(list_name, timeframe, chat_id):
         error_message = f"Error analyzing {list_name} ({timeframe}): {str(e)}"
         send_telegram_message(chat_id, error_message)
 
+# Function to check alerts
+def check_alerts():
+    while True:
+        # Add your alert-checking logic here
+        time.sleep(60)  # Check alerts every 60 seconds
+
 # Main function
-def main():
+def handle_telegram_commands():
     last_update_id = None
     while True:
         # Get updates from Telegram
@@ -204,5 +247,17 @@ def main():
         # Wait for 1 second before checking for new updates
         time.sleep(1)
 
-if __name__ == "__main__":
-    main()
+# Start the bot
+if __name__ == '__main__':
+    print("Bot is running...")
+    # Start the Flask server to keep the bot alive
+    keep_alive()
+
+    # Start the bot in a separate thread
+    bot_thread = Thread(target=handle_telegram_commands)
+    bot_thread.daemon = True
+    bot_thread.start()
+
+    # Keep the main thread alive
+    while True:
+        time.sleep(1)
