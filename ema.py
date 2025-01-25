@@ -2,19 +2,15 @@ import requests
 import numpy as np
 import pandas as pd
 import time
-from datetime import datetime
 import json
 import logging
 import os
 from threading import Thread
-from keep import keep_alive
+from keep import keep_alive  # Import the keep_alive function from keep.py
 
-# Start the Flask app to keep the bot alive
-keep_alive()
-
-# Initialize the bot
-TELEGRAM_TOKEN = os.environ.get('6987736147:AAGtzXRQL8d2pkvUijq1X05mdzuyLO8vd5g')  # Fetch from environment variables
-API_KEY = os.environ.get('72a7a3627d030f1b8f06ea07f5e30f32007d4e6e338ae584010feb82dab6f86e')  # Fetch from environment variables
+# Hardcoded API keys and tokens
+TELEGRAM_TOKEN = "6987736147:AAGtzXRQL8d2pkvUijq1X05mdzuyLO8vd5g"  # Your Telegram bot token
+API_KEY = "72a7a3627d030f1b8f06ea07f5e30f32007d4e6e338ae584010feb82dab6f86e"  # Your CryptoCompare API key
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
 
 # Track bot start time for uptime calculation
@@ -205,47 +201,56 @@ def check_alerts():
 def handle_telegram_commands():
     last_update_id = None
     while True:
-        # Get updates from Telegram
-        url = f"{TELEGRAM_API_URL}/getUpdates"
-        params = {"timeout": 30, "offset": last_update_id}
-        response = requests.get(url, params=params)
-        updates = response.json().get("result", [])
+        try:
+            # Get updates from Telegram
+            url = f"{TELEGRAM_API_URL}/getUpdates"
+            params = {"timeout": 30, "offset": last_update_id}
+            response = requests.get(url, params=params)
+            updates = response.json().get("result", [])
 
-        for update in updates:
-            last_update_id = update["update_id"] + 1  # Update the offset
+            if not updates:
+                logging.info("No updates found.")
+            else:
+                logging.info(f"Received updates: {updates}")
 
-            # Handle /start command
-            if "message" in update and update["message"].get("text") == "/start":
-                chat_id = update["message"]["chat"]["id"]
-                handle_start_command(chat_id)
+            for update in updates:
+                last_update_id = update["update_id"] + 1  # Update the offset
 
-            # Handle callback queries
-            if "callback_query" in update:
-                handle_callback_query(update["callback_query"])
+                # Handle /start command
+                if "message" in update and update["message"].get("text") == "/start":
+                    chat_id = update["message"]["chat"]["id"]
+                    handle_start_command(chat_id)
 
-            # Handle /EMA command
-            if "message" in update and update["message"].get("text", "").startswith("/EMA"):
-                try:
-                    # Parse the command
-                    parts = update["message"]["text"].split()
-                    if len(parts) != 3:
-                        raise ValueError("Invalid command format. Use /EMA LISTNAME TIMEFRAME or /EMA SYMBOL TIMEFRAME.")
+                # Handle callback queries
+                if "callback_query" in update:
+                    handle_callback_query(update["callback_query"])
 
-                    target = parts[1].upper()  # Extract list name or symbol
-                    timeframe = parts[2].upper()  # Extract timeframe (e.g., 15M)
+                # Handle /EMA command
+                if "message" in update and update["message"].get("text", "").startswith("/EMA"):
+                    try:
+                        # Parse the command
+                        parts = update["message"]["text"].split()
+                        if len(parts) != 3:
+                            raise ValueError("Invalid command format. Use /EMA LISTNAME TIMEFRAME or /EMA SYMBOL TIMEFRAME.")
 
-                    # Check if the target is a list or a symbol
-                    if target in SYMBOL_LISTS:
-                        analyze_list(target, timeframe, update["message"]["chat"]["id"])
-                    else:
-                        analyze_symbol(target, timeframe, update["message"]["chat"]["id"])
+                        target = parts[1].upper()  # Extract list name or symbol
+                        timeframe = parts[2].upper()  # Extract timeframe (e.g., 15M)
 
-                except Exception as e:
-                    error_message = f"Error: {str(e)}. Please use the format /EMA LISTNAME TIMEFRAME or /EMA SYMBOL TIMEFRAME (e.g., /EMA LIST1 1H or /EMA BTC D)."
-                    send_telegram_message(update["message"]["chat"]["id"], error_message)
+                        # Check if the target is a list or a symbol
+                        if target in SYMBOL_LISTS:
+                            analyze_list(target, timeframe, update["message"]["chat"]["id"])
+                        else:
+                            analyze_symbol(target, timeframe, update["message"]["chat"]["id"])
 
-        # Wait for 1 second before checking for new updates
-        time.sleep(1)
+                    except Exception as e:
+                        error_message = f"Error: {str(e)}. Please use the format /EMA LISTNAME TIMEFRAME or /EMA SYMBOL TIMEFRAME (e.g., /EMA LIST1 1H or /EMA BTC D)."
+                        send_telegram_message(update["message"]["chat"]["id"], error_message)
+
+            # Wait for 1 second before checking for new updates
+            time.sleep(1)
+        except Exception as e:
+            logging.error(f"Error in handle_telegram_commands: {e}")
+            time.sleep(5)  # Wait before retrying
 
 # Start the bot
 if __name__ == '__main__':
