@@ -40,7 +40,7 @@ SYMBOL_LISTS = {
               "POND", "PORT3", "PORTAL", "POWR", "PRE", "PROM", "PRQ", "PUMLX", "PYTH", "PLUME", "PYUSD", "QKC", "QNT", "QTUM", "RDNT", "REQ", "REV", "RLC", "RNDR", "ROOT", "ROSE", "ROUP", "RSR",
               "RVN", "SAFE", "SAND", "SAVM", "SCRT", "SDM", "SDN", "SEI", "SERO", "SFP", "SKL", "SLF", "SLN", "SMH", "SOUL", "STMX", "STORE", "STORJ", "STRAX", "STX", "SUI", "SWASH", "SWEAT", "SWFTC",
               "SXP", "SYS", "TADA", "TAIKO", "TAO", "TARA", "TEL", "TFUEL", "THETA", "TIA", "TLOS", "TNSR", "TON", "TRAC", "TRB", "TRIAS", "TRUF", "TRVL", "TWT", "TXA", "UBX", "UMA", "USDP", "UTK", "UXLINK",
-              "VANA", "VANRY", "VEMP", "VET", "VIDT", "VIRTUAL", "VR", "VRA", "VSYS", "VXV", "W", "WAVES", "WELL", "WEST", "WILD", "WIN", "WLD", "WMT", "WOOP", "WORK", "WRX", "WSDM", "WXT", "XAI", "XCH", "XDB",
+              "VANA", "VANRY", "VEMP", "VET", "VIDT", "VIRTUAL", "VR", "VRA", "VSYS", "VXV", "W", "WAVES", "WELL", "WEST", "WILD", "WIN", "WLD", "WMT", "WOOP", "WRX", "WSDM", "WXT", "XAI", "XCH", "XDB",
               "XDC", "XEC", "XEM", "XION", "XLM", "XMR", "XPR", "XRD", "XRP", "XTAG", "XTZ", "XYO", "ZBCN", "ZELIX", "ZEN", "ZETA", "ZIL", "ZK", "ZKJ", "ZRO"]   # List 2: BTC, ETH
 }
 
