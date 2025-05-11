@@ -100,7 +100,7 @@ def fetch_data(symbol, timeframe):
         raise ValueError("Invalid timeframe specified.")
 
     endpoint, aggregate = timeframe_map[timeframe]
-    url = f"https://min-api.cryptocompare.com/data/{endpoint}?fsym={symbol}&tsym=USDT&limit=100&aggregate={aggregate}&api_key={API_KEY}&e=Kucoin"
+    url = f"https://min-api.cryptocompare.com/data/{endpoint}?fsym={symbol}&tsym=USDT&limit=100&aggregate={aggregate}&api_key={API_KEY}&e=Bitget"
 
     response = requests.get(url)
     data = response.json()["Data"]
