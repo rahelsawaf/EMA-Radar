@@ -26,7 +26,7 @@ SYMBOL_LISTS = {
               "BIO","BLUR","BLZ","BMT","BRN","BSV","BTT","CARV","CELO","CELR","CFX","CHR","CHZ","CKB","CLORE","COOKIE","COREUM","CORE","CREO","CROS","CSPR","CTSI","CVC","CYBER","DEGEN","DENT","DMAIL","DOT"
               ,"DTEC","D","DUSK","EGLD","ELA","ELF","ENJ","ENS","EOS","EPT","ETC","ETHW","FET","FHE","FIDA","FIL","FITFI","FLOW","FLUX","FTN","FUEL","GALA","GAS","GFAL","GHX","GLMR","GLM","GMT","GOMINING","GPS"
               ,"GRASS","GRT","GTC","HBAR","HEI","HIGH","HIVE","HNT","HOOK","HOT","HYPER","IAG","ICE","ICP","ICX","ID","IMX","IOTX","IP","IQ","JASMY","KAIA","KAITO","KAS","KDA","KLAY","KSM","L3","LAT","LINK"
-              ,"LNQ","LOOKS","LPT","LRC","LSK"],  # List 1: BTC, LIT
+              ,"LNQ","LOOKS","LPT","LRC","LSK"]  # List 1: BTC, LIT
 
     
     "LIST2": [" LUNA", " LYX", " MAGIC", " MANA", " MANTA"
