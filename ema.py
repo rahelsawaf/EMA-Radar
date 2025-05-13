@@ -21,34 +21,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 # Define symbol lists
 SYMBOL_LISTS = {
-    "LIST1": [" 1INCH", " A8"," Aave", " ACA", " ACE"
-  ," ACH", " ACT", " ACX"," ADA"," AERGO"
-  , " AGLD", " AI16Z"," AIN"," AITECH"," AIXBT"
-  ," ALCH"," ALGO", " AI", " ALICE", " ALPH"
-  ," ALPINE", " ALT", " ALU", " AMP"," ANKR"
-  , " ANLOG", " ANYONE", " APE", " API3"," APT"
-  , " ARB"," ARC", " ARKM", " ARK", " ARPA"
-  ," ASI"," ASTO", " AR", " ASTR"," ATH"
-  , " ATOM", " AURORA", " AVAAI"," AVAIL", " AVA"
-  , " AVAX"," AXL", " AZERO", " BAD", " BAI", " BANANA", " BAND", " BAT", " BEAM"," BGB"
-  , " BGSC"," BICO", " BIO"," BLUR", " BLZ"
-  , " BMT"," BRN"," BSV", " BTT", " CARV"
-  , " CELO", " CELR", " CFX", " CHR", " CHZ"
-  , " CKB", " CLORE", " COOKIE", " COREUM", " CORE"
-  , " CREO", " CROS", " CSPR", " CTSI", " CVC"
-  , " CYBER", " DEGEN", " DENT", " DMAIL", " DOT"
-  , " DTEC", " D", " DUSK", " EGLD", " ELA"
-  , " ELF", " ENJ", " ENS", " EOS", " EPT"
-  , " ETC", " ETHW", " FET", " FHE", " FIDA", " FIL", " FITFI", " FLOW", " FLUX", " FTN"
-  , " FUEL", " GALA", " GAS", " GFAL", " GHX"
-  , " GLMR", " GLM", " GMT", " GOMINING", " GPS"
-  , " GRASS", " GRT", " GTC", " HBAR", " HEI"
-  , " HIGH", " HIVE", " HNT", " HOOK"," HOT"
-  , " HYPER", " IAG", " ICE", " ICP", " ICX"
-  , " ID", " IMX", " IOTX", " IP", " IQ"
-  , " JASMY", " KAIA", " KAITO", " KAS", " KDA"
-  , " KLAY", " KSM", " L3", " LAT", " LINK"
-  , " LNQ", " LOOKS"," LPT", " LRC", " LSK"],  # List 1: BTC, LIT
+    "LIST1": ["1INCH","A8","Aave","ACA","ACE","ACH","ACT","ACX","ADA","AERGO","AGLD","AI16Z","AIN","AITECH","AIXBT","ALCH","ALGO","AI","ALICE","ALPH","ALPINE","ALT","ALU","AMP","ANKR","ANLOG","ANYONE","APE","API3","APT"
+              ,"ARB","ARC","ARKM","ARK","ARPA","ASI","ASTO","AR","ASTR","ATH","ATOM","AURORA","AVAAI","AVAIL","AVA","AVAX","AXL","AZERO","BAD","BAI","BANANA","BAND","BAT","BEAM","BGB","BGSC","BICO",
+              "BIO","BLUR","BLZ","BMT","BRN","BSV","BTT","CARV","CELO","CELR","CFX","CHR","CHZ","CKB","CLORE","COOKIE","COREUM","CORE","CREO","CROS","CSPR","CTSI","CVC","CYBER","DEGEN","DENT","DMAIL","DOT"
+              ,"DTEC","D","DUSK","EGLD","ELA","ELF","ENJ","ENS","EOS","EPT","ETC","ETHW","FET","FHE","FIDA","FIL","FITFI","FLOW","FLUX","FTN","FUEL","GALA","GAS","GFAL","GHX","GLMR","GLM","GMT","GOMINING","GPS"
+              ,"GRASS","GRT","GTC","HBAR","HEI","HIGH","HIVE","HNT","HOOK","HOT","HYPER","IAG","ICE","ICP","ICX","ID","IMX","IOTX","IP","IQ","JASMY","KAIA","KAITO","KAS","KDA","KLAY","KSM","L3","LAT","LINK"
+              ,"LNQ","LOOKS","LPT","LRC","LSK"],  # List 1: BTC, LIT
 
     
     "LIST2": [" LUNA", " LYX", " MAGIC", " MANA", " MANTA"
